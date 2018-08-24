@@ -6,7 +6,7 @@
 
     <groupId>idk.plugin.welcomeform</groupId>
     <artifactId>WelcomeForm</artifactId>
-    <version>1.0</version>
+    <version>1.1</version>
     <build>
         <defaultGoal>install</defaultGoal>
         <sourceDirectory>${basedir}/src/main/java</sourceDirectory>

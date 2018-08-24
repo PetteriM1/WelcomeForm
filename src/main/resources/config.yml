@@ -1,3 +1,5 @@
-formTitle: "WelcomeForm"
-formText: "You can edit this text in config."
+formTitle: "§aExample"
+formText: "§eYou can edit this text in config. %n%n%n%n%n%n%n%n%n%n%n%n §r§bPlugin created by §dPetteriM1"
 secondsAfterJoin: 5
+showButton: true
+buttonText: "§6Okay"
