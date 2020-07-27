@@ -1,5 +1,5 @@
 name: WelcomeForm
-version: "1.1"
+version: "1.2"
 api: ["1.0.0"]
 author: PetteriM1
 main: idk.plugin.welcomeform.Main

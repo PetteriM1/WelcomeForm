@@ -1,5 +1,18 @@
+# config version, do not edit!
+config: 2
+# form title
 formTitle: "§aExample"
+# form text
+# use § for colors and §n for a new line
 formText: "§eYou can edit this text in config. %n%n%n%n%n%n%n%n%n%n%n%n §r§bPlugin created by §dPetteriM1"
-secondsAfterJoin: 5
+# how many seconds after player spawning the form will show up
+secondsAfterJoin: 0
+# enable button
 showButton: true
+# button text
 buttonText: "§6Okay"
+# enable button click action
+buttonAction: false
+# command that will run when the button is clicked
+# without /
+buttonCommand: ""
