@@ -10,9 +10,12 @@ import cn.nukkit.form.window.FormWindowSimple;
 import cn.nukkit.network.protocol.SetLocalPlayerAsInitializedPacket;
 import cn.nukkit.plugin.PluginBase;
 import cn.nukkit.scheduler.NukkitRunnable;
+import com.creeperface.nukkit.placeholderapi.api.PlaceholderAPI;
+
+import java.util.function.BiFunction;
 
 public class Main extends PluginBase implements Listener {
-    
+
     boolean button;
     boolean command;
     int delay;
@@ -20,6 +23,8 @@ public class Main extends PluginBase implements Listener {
     String text;
     String buttonText;
     String buttonCommand;
+
+    private BiFunction<String, Player, String> placeholderFunc;
 
     @Override
     public void onEnable() {
@@ -32,9 +37,11 @@ public class Main extends PluginBase implements Listener {
         command = getConfig().getBoolean("buttonAction", false);
         delay = getConfig().getInt("secondsAfterJoin", 0) * 20;
         title = getConfig().getString("formTitle", "§aExample").replace("§", "\u00A7").replace("%n", "\n");
-        text= getConfig().getString("formText", "§eYou can edit this text in config. %n%n%n%n%n%n%n%n%n%n%n%n §r§bPlugin created by §dPetteriM1").replace("§", "\u00A7").replace("%n", "\n");
+        text = getConfig().getString("formText", "§eYou can edit this text in config. %n%n%n%n%n%n%n%n%n%n%n%n §r§bPlugin created by §dPetteriM1").replace("§", "\u00A7").replace("%n", "\n");
         buttonText = getConfig().getString("buttonText", "§6Okay").replace("§", "\u00A7").replace("%n", "\n");
         buttonCommand = getConfig().getString("buttonCommand", "");
+
+        initPlaceholders();
     }
 
     @EventHandler(ignoreCancelled = true)
@@ -56,8 +63,8 @@ public class Main extends PluginBase implements Listener {
     }
 
     private void showForm(Player p) {
-        FormWindowSimple form = new FormWindowSimple(title, text);
-        if (button) form.addButton(new ElementButton(buttonText));
+        FormWindowSimple form = new FormWindowSimple(placeholderFunc.apply(title, p), placeholderFunc.apply(text, p));
+        if (button) form.addButton(new ElementButton(placeholderFunc.apply(buttonText, p)));
         p.showFormWindow(form);
     }
 
@@ -72,6 +79,14 @@ public class Main extends PluginBase implements Listener {
                     getServer().dispatchCommand(e.getPlayer(), buttonCommand);
                 }
             }
+        }
+    }
+
+    private void initPlaceholders() {
+        if (getServer().getPluginManager().getPlugin("PlaceholderAPI") != null) {
+            placeholderFunc = (s, p) -> PlaceholderAPI.getInstance().translateString(s, p);
+        } else {
+            placeholderFunc = (s, p) -> s;
         }
     }
 }
