@@ -1,7 +1,7 @@
 name: WelcomeForm
-version: "1.3"
-api: ["1.0.0"]
+version: "${pom.version}"
+api: ["1.0.11"]
 author: PetteriM1
-main: idk.plugin.welcomeform.Main
+main: me.petterim1.welcomeform.Main
 website: https://nukkitx.com/resources/welcomeform.95/
-softdepend: [ "PlaceholderAPI" ]
+softdepend: ["PlaceholderAPI"]

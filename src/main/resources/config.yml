@@ -1,15 +1,17 @@
 # config version, do not edit!
 config: 2
 # form title
-formTitle: "§aExample"
+# use § for colors
+formTitle: "§2WelcomeForm"
 # form text
-# use § for colors and §n for a new line
-formText: "§eYou can edit this text in config. %n%n%n%n%n%n%n%n%n%n%n%n §r§bPlugin created by §dPetteriM1"
+# use § for colors and %n for a new line
+formText: "§eYou can edit this text in config.%n%n%n%n%n%n%n%n%n%n%n%n§r§bPlugin created by §dPetteriM1"
 # how many seconds after player spawning the form will show up
 secondsAfterJoin: 0
 # enable button
 showButton: true
 # button text
+# use § for colors and %n for a new line
 buttonText: "§6Okay"
 # enable button click action
 buttonAction: false

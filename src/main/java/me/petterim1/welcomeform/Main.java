@@ -1,13 +1,12 @@
-package idk.plugin.welcomeform;
+package me.petterim1.welcomeform;
 
 import cn.nukkit.Player;
 import cn.nukkit.event.EventHandler;
 import cn.nukkit.event.Listener;
 import cn.nukkit.event.player.PlayerFormRespondedEvent;
-import cn.nukkit.event.server.DataPacketReceiveEvent;
+import cn.nukkit.event.player.PlayerLocallyInitializedEvent;
 import cn.nukkit.form.element.ElementButton;
 import cn.nukkit.form.window.FormWindowSimple;
-import cn.nukkit.network.protocol.SetLocalPlayerAsInitializedPacket;
 import cn.nukkit.plugin.PluginBase;
 import cn.nukkit.scheduler.NukkitRunnable;
 import com.creeperface.nukkit.placeholderapi.api.PlaceholderAPI;
@@ -36,36 +35,27 @@ public class Main extends PluginBase implements Listener {
         button = getConfig().getBoolean("showButton", true);
         command = getConfig().getBoolean("buttonAction", false);
         delay = getConfig().getInt("secondsAfterJoin", 0) * 20;
-        title = getConfig().getString("formTitle", "§aExample").replace("§", "\u00A7").replace("%n", "\n");
-        text = getConfig().getString("formText", "§eYou can edit this text in config. %n%n%n%n%n%n%n%n%n%n%n%n §r§bPlugin created by §dPetteriM1").replace("§", "\u00A7").replace("%n", "\n");
-        buttonText = getConfig().getString("buttonText", "§6Okay").replace("§", "\u00A7").replace("%n", "\n");
+        title = getConfig().getString("formTitle", "§2WelcomeForm");
+        text = getConfig().getString("formText", "§eYou can edit this text in config.\n\n\n\n\n\n\n\n\n\n\n\n§r§bPlugin created by §dPetteriM1").replace("%n", "\n");
+        buttonText = getConfig().getString("buttonText", "§6Okay").replace("%n", "\n");
         buttonCommand = getConfig().getString("buttonCommand", "");
-
         initPlaceholders();
     }
 
     @EventHandler(ignoreCancelled = true)
-    public void onDataPk(DataPacketReceiveEvent e) {
-        if (e.getPacket() instanceof SetLocalPlayerAsInitializedPacket) {
-            Player p = e.getPlayer();
-            if (delay <= 0) {
-                showForm(p);
-            } else {
-                new NukkitRunnable() {
-                    public void run() {
-                        if (p.isOnline()) {
-                            showForm(p);
-                        }
+    public void onPlayerSpawned(PlayerLocallyInitializedEvent e) {
+        Player p = e.getPlayer();
+        if (delay <= 0) {
+            showForm(p);
+        } else {
+            new NukkitRunnable() {
+                public void run() {
+                    if (p.isOnline()) {
+                        showForm(p);
                     }
-                }.runTaskLater(this, delay);
-            }
+                }
+            }.runTaskLater(this, delay);
         }
-    }
-
-    private void showForm(Player p) {
-        FormWindowSimple form = new FormWindowSimple(placeholderFunc.apply(title, p), placeholderFunc.apply(text, p));
-        if (button) form.addButton(new ElementButton(placeholderFunc.apply(buttonText, p)));
-        p.showFormWindow(form);
     }
 
     @EventHandler
@@ -80,6 +70,12 @@ public class Main extends PluginBase implements Listener {
                 }
             }
         }
+    }
+
+    private void showForm(Player p) {
+        FormWindowSimple form = new FormWindowSimple(placeholderFunc.apply(title, p), placeholderFunc.apply(text, p));
+        if (button) form.addButton(new ElementButton(placeholderFunc.apply(buttonText, p)));
+        p.showFormWindow(form);
     }
 
     private void initPlaceholders() {
