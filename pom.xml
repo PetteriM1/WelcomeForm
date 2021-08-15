@@ -6,7 +6,7 @@
 
     <groupId>me.petterim1.welcomeform</groupId>
     <artifactId>WelcomeForm</artifactId>
-    <version>1.3</version>
+    <version>1.4</version>
     <build>
         <defaultGoal>install</defaultGoal>
         <sourceDirectory>${basedir}/src/main/java</sourceDirectory>

@@ -15,14 +15,13 @@ import java.util.function.BiFunction;
 
 public class Main extends PluginBase implements Listener {
 
-    boolean button;
-    boolean command;
-    int delay;
-    String title;
-    String text;
-    String buttonText;
-    String buttonCommand;
-
+    private boolean button;
+    private boolean command;
+    private int delay;
+    private String title;
+    private String text;
+    private String buttonText;
+    private String buttonCommand;
     private BiFunction<String, Player, String> placeholderFunc;
 
     @Override
@@ -79,9 +78,17 @@ public class Main extends PluginBase implements Listener {
     }
 
     private void initPlaceholders() {
-        if (getServer().getPluginManager().getPlugin("PlaceholderAPI") != null) {
-            placeholderFunc = (s, p) -> PlaceholderAPI.getInstance().translateString(s, p);
-        } else {
+        try {
+            Class<?> placeholderAPI = Class.forName("com.creeperface.nukkit.placeholderapi.api.PlaceholderAPI");
+            placeholderFunc = (s, p) -> {
+                try {
+                    return (String) placeholderAPI.getDeclaredMethod("translateString", String.class, Player.class).invoke(PlaceholderAPI.getInstance(), s, p);
+                } catch (Exception e) {
+                    getLogger().error("Error with PlaceholderAPI", e);
+                    return s;
+                }
+            };
+        } catch (ClassNotFoundException ignored) {
             placeholderFunc = (s, p) -> s;
         }
     }
