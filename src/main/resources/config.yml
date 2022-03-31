@@ -1,5 +1,5 @@
 # config version, do not edit!
-config: 2
+config: 3
 # form title
 # use § for colors
 formTitle: "§2WelcomeForm"
@@ -18,3 +18,6 @@ buttonAction: false
 # command that will run when the button is clicked
 # without /
 buttonCommand: ""
+# only show the form window once
+# delete formRead.yml to reset
+showOnlyOnce: false

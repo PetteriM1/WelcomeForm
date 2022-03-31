@@ -9,41 +9,65 @@ import cn.nukkit.form.element.ElementButton;
 import cn.nukkit.form.window.FormWindowSimple;
 import cn.nukkit.plugin.PluginBase;
 import cn.nukkit.scheduler.NukkitRunnable;
+import cn.nukkit.utils.Config;
 import com.creeperface.nukkit.placeholderapi.api.PlaceholderAPI;
 
+import java.util.List;
 import java.util.function.BiFunction;
 
 public class Main extends PluginBase implements Listener {
 
     private boolean button;
-    private boolean command;
+    private boolean buttonAction;
+    private boolean showOnlyOnce;
     private int delay;
-    private String title;
-    private String text;
+    private String formTitle;
+    private String formText;
     private String buttonText;
     private String buttonCommand;
     private BiFunction<String, Player, String> placeholderFunc;
+    private List<String> formRead;
 
     @Override
     public void onEnable() {
         getServer().getPluginManager().registerEvents(this, this);
         saveDefaultConfig();
-        if (getConfig().getInt("config") < 2) {
+        if (getConfig().getInt("config") < 3) {
             getLogger().warning("Outdated config file detected! Please delete the old config to use all new features");
         }
         button = getConfig().getBoolean("showButton", true);
-        command = getConfig().getBoolean("buttonAction", false);
+        buttonAction = getConfig().getBoolean("buttonAction", false);
+        showOnlyOnce = getConfig().getBoolean("showOnlyOnce", false);
         delay = getConfig().getInt("secondsAfterJoin", 0) * 20;
-        title = getConfig().getString("formTitle", "§2WelcomeForm");
-        text = getConfig().getString("formText", "§eYou can edit this text in config.\n\n\n\n\n\n\n\n\n\n\n\n§r§bPlugin created by §dPetteriM1").replace("%n", "\n");
+        formTitle = getConfig().getString("formTitle", "§2WelcomeForm");
+        formText = getConfig().getString("formText", "§eYou can edit this text in config.\n\n\n\n\n\n\n\n\n\n\n\n§r§bPlugin created by §dPetteriM1").replace("%n", "\n");
         buttonText = getConfig().getString("buttonText", "§6Okay").replace("%n", "\n");
         buttonCommand = getConfig().getString("buttonCommand", "");
+        if (showOnlyOnce) {
+            formRead = new Config(getDataFolder() + "/formRead.yml", Config.YAML).getStringList("formRead");
+        }
         initPlaceholders();
+    }
+
+    @Override
+    public void onDisable() {
+        if (showOnlyOnce) {
+            Config cfg = new Config(getDataFolder() + "/formRead.yml", Config.YAML);
+            cfg.set("formRead", formRead);
+            cfg.save(false);
+        }
     }
 
     @EventHandler(ignoreCancelled = true)
     public void onPlayerSpawned(PlayerLocallyInitializedEvent e) {
         Player p = e.getPlayer();
+        if (showOnlyOnce) {
+            if (formRead.contains(p.getName())) {
+                return;
+            } else {
+                formRead.add(p.getName());
+            }
+        }
         if (delay <= 0) {
             showForm(p);
         } else {
@@ -57,13 +81,13 @@ public class Main extends PluginBase implements Listener {
         }
     }
 
-    @EventHandler
+    @EventHandler(ignoreCancelled = true)
     public void onFormResponse(PlayerFormRespondedEvent e) {
-        if (!button || !command) return;
+        if (!button || !buttonAction) return;
         if (e.getResponse() == null) return;
         if (e.getWindow().wasClosed()) return;
         if (e.getWindow() instanceof FormWindowSimple) {
-            if (title.equals(((FormWindowSimple) e.getWindow()).getTitle())) {
+            if (formTitle.equals(((FormWindowSimple) e.getWindow()).getTitle())) {
                 if (buttonText.equals(((FormWindowSimple) e.getWindow()).getResponse().getClickedButton().getText())) {
                     getServer().dispatchCommand(e.getPlayer(), buttonCommand);
                 }
@@ -72,7 +96,7 @@ public class Main extends PluginBase implements Listener {
     }
 
     private void showForm(Player p) {
-        FormWindowSimple form = new FormWindowSimple(placeholderFunc.apply(title, p), placeholderFunc.apply(text, p));
+        FormWindowSimple form = new FormWindowSimple(placeholderFunc.apply(formTitle, p), placeholderFunc.apply(formText, p));
         if (button) form.addButton(new ElementButton(placeholderFunc.apply(buttonText, p)));
         p.showFormWindow(form);
     }
