@@ -13,7 +13,6 @@ import cn.nukkit.utils.Config;
 import com.creeperface.nukkit.placeholderapi.api.PlaceholderAPI;
 
 import java.util.List;
-import java.util.function.BiFunction;
 
 public class Main extends PluginBase implements Listener {
 
@@ -25,8 +24,9 @@ public class Main extends PluginBase implements Listener {
     private String formText;
     private String buttonText;
     private String buttonCommand;
-    private BiFunction<String, Player, String> placeholderFunc;
     private List<String> formRead;
+
+    static PlaceholderAPI api = null;
 
     @Override
     public void onEnable() {
@@ -96,24 +96,20 @@ public class Main extends PluginBase implements Listener {
     }
 
     private void showForm(Player p) {
-        FormWindowSimple form = new FormWindowSimple(placeholderFunc.apply(formTitle, p), placeholderFunc.apply(formText, p));
-        if (button) form.addButton(new ElementButton(placeholderFunc.apply(buttonText, p)));
-        p.showFormWindow(form);
+        if (api != null) {
+            formTitle = api.translateString(formTitle, p);
+            formText = api.translateString(formText, p);
+            buttonText = api.translateString(buttonText, p);
+            FormWindowSimple form = new FormWindowSimple(formTitle, formText);
+            if (button) form.addButton(new ElementButton(buttonText));
+            p.showFormWindow(form);
+        }
     }
 
     private void initPlaceholders() {
         try {
-            Class<?> placeholderAPI = Class.forName("com.creeperface.nukkit.placeholderapi.api.PlaceholderAPI");
-            placeholderFunc = (s, p) -> {
-                try {
-                    return (String) placeholderAPI.getDeclaredMethod("translateString", String.class, Player.class).invoke(PlaceholderAPI.getInstance(), s, p);
-                } catch (Exception e) {
-                    getLogger().error("Error with PlaceholderAPI", e);
-                    return s;
-                }
-            };
-        } catch (ClassNotFoundException ignored) {
-            placeholderFunc = (s, p) -> s;
+            api = PlaceholderAPI.getInstance();
+        } catch (Throwable ignored) {
         }
     }
 }
