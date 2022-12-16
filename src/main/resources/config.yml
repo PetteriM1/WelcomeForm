@@ -17,6 +17,7 @@ buttonText: "§6Okay"
 buttonAction: false
 # command that will run when the button is clicked
 # without /
+# use %player% for player name
 buttonCommand: ""
 # only show the form window once
 # delete formRead.yml to reset

@@ -17,10 +17,10 @@ import java.util.function.BiFunction;
 
 public class Main extends PluginBase implements Listener {
 
-    private boolean button;
+    private boolean showButton;
     private boolean buttonAction;
     private boolean showOnlyOnce;
-    private int delay;
+    private int secondsAfterJoin;
     private String formTitle;
     private String formText;
     private String buttonText;
@@ -35,10 +35,10 @@ public class Main extends PluginBase implements Listener {
         if (getConfig().getInt("config") < 3) {
             getLogger().warning("Outdated config file detected! Please delete the old config to use all new features");
         }
-        button = getConfig().getBoolean("showButton", true);
+        showButton = getConfig().getBoolean("showButton", true);
         buttonAction = getConfig().getBoolean("buttonAction", false);
         showOnlyOnce = getConfig().getBoolean("showOnlyOnce", false);
-        delay = getConfig().getInt("secondsAfterJoin", 0) * 20;
+        secondsAfterJoin = getConfig().getInt("secondsAfterJoin", 0) * 20;
         formTitle = getConfig().getString("formTitle", "§2WelcomeForm");
         formText = getConfig().getString("formText", "§eYou can edit this text in config.\n\n\n\n\n\n\n\n\n\n\n\n§r§bPlugin created by §dPetteriM1").replace("%n", "\n");
         buttonText = getConfig().getString("buttonText", "§6Okay").replace("%n", "\n");
@@ -68,7 +68,7 @@ public class Main extends PluginBase implements Listener {
                 formRead.add(p.getName());
             }
         }
-        if (delay <= 0) {
+        if (secondsAfterJoin <= 0) {
             showForm(p);
         } else {
             new NukkitRunnable() {
@@ -77,19 +77,20 @@ public class Main extends PluginBase implements Listener {
                         showForm(p);
                     }
                 }
-            }.runTaskLater(this, delay);
+            }.runTaskLater(this, secondsAfterJoin);
         }
     }
 
     @EventHandler(ignoreCancelled = true)
     public void onFormResponse(PlayerFormRespondedEvent e) {
-        if (!button || !buttonAction) return;
+        if (!showButton || !buttonAction) return;
         if (e.getResponse() == null) return;
         if (e.getWindow().wasClosed()) return;
         if (e.getWindow() instanceof FormWindowSimple) {
-            if (formTitle.equals(((FormWindowSimple) e.getWindow()).getTitle())) {
-                if (buttonText.equals(((FormWindowSimple) e.getWindow()).getResponse().getClickedButton().getText())) {
-                    getServer().dispatchCommand(e.getPlayer(), buttonCommand);
+            Player p = e.getPlayer();
+            if (placeholderFunc.apply(formTitle, p).equals(((FormWindowSimple) e.getWindow()).getTitle())) {
+                if (placeholderFunc.apply(buttonText, p).equals(((FormWindowSimple) e.getWindow()).getResponse().getClickedButton().getText())) {
+                    getServer().dispatchCommand(p, buttonCommand.replace("%player%", "\"" + p.getName()) + "\"");
                 }
             }
         }
@@ -97,7 +98,7 @@ public class Main extends PluginBase implements Listener {
 
     private void showForm(Player p) {
         FormWindowSimple form = new FormWindowSimple(placeholderFunc.apply(formTitle, p), placeholderFunc.apply(formText, p));
-        if (button) form.addButton(new ElementButton(placeholderFunc.apply(buttonText, p)));
+        if (showButton) form.addButton(new ElementButton(placeholderFunc.apply(buttonText, p)));
         p.showFormWindow(form);
     }
 
