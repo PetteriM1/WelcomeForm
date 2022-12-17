@@ -13,7 +13,6 @@ import cn.nukkit.utils.Config;
 import com.creeperface.nukkit.placeholderapi.api.PlaceholderAPI;
 
 import java.util.List;
-import java.util.function.BiFunction;
 
 public class Main extends PluginBase implements Listener {
 
@@ -25,16 +24,20 @@ public class Main extends PluginBase implements Listener {
     private String formText;
     private String buttonText;
     private String buttonCommand;
-    private BiFunction<String, Player, String> placeholderFunc;
     private List<String> formRead;
 
     @Override
     public void onEnable() {
         getServer().getPluginManager().registerEvents(this, this);
         saveDefaultConfig();
+
         if (getConfig().getInt("config") < 3) {
             getLogger().warning("Outdated config file detected! Please delete the old config to use all new features");
         }
+        if (!hasPlaceholders()) {
+            getLogger().warning("PlaceholderAPI not found. The plugin is loaded without using placeholders");
+        }
+
         showButton = getConfig().getBoolean("showButton", true);
         buttonAction = getConfig().getBoolean("buttonAction", false);
         showOnlyOnce = getConfig().getBoolean("showOnlyOnce", false);
@@ -46,7 +49,6 @@ public class Main extends PluginBase implements Listener {
         if (showOnlyOnce) {
             formRead = new Config(getDataFolder() + "/formRead.yml", Config.YAML).getStringList("formRead");
         }
-        initPlaceholders();
     }
 
     @Override
@@ -88,8 +90,8 @@ public class Main extends PluginBase implements Listener {
         if (e.getWindow().wasClosed()) return;
         if (e.getWindow() instanceof FormWindowSimple) {
             Player p = e.getPlayer();
-            if (placeholderFunc.apply(formTitle, p).equals(((FormWindowSimple) e.getWindow()).getTitle())) {
-                if (placeholderFunc.apply(buttonText, p).equals(((FormWindowSimple) e.getWindow()).getResponse().getClickedButton().getText())) {
+            if (placeholders(formTitle, p).equals(((FormWindowSimple) e.getWindow()).getTitle())) {
+                if (placeholders(buttonText, p).equals(((FormWindowSimple) e.getWindow()).getResponse().getClickedButton().getText())) {
                     getServer().dispatchCommand(p, buttonCommand.replace("%player%", "\"" + p.getName()) + "\"");
                 }
             }
@@ -97,24 +99,24 @@ public class Main extends PluginBase implements Listener {
     }
 
     private void showForm(Player p) {
-        FormWindowSimple form = new FormWindowSimple(placeholderFunc.apply(formTitle, p), placeholderFunc.apply(formText, p));
-        if (showButton) form.addButton(new ElementButton(placeholderFunc.apply(buttonText, p)));
+        FormWindowSimple form = new FormWindowSimple(placeholders(formTitle, p), placeholders(formText, p));
+        if (showButton) form.addButton(new ElementButton(placeholders(buttonText, p)));
         p.showFormWindow(form);
     }
 
-    private void initPlaceholders() {
-        try {
-            Class<?> placeholderAPI = Class.forName("com.creeperface.nukkit.placeholderapi.api.PlaceholderAPI");
-            placeholderFunc = (s, p) -> {
-                try {
-                    return (String) PlaceholderAPI.getInstance().translateString(s, p);
-                } catch (Exception e) {
-                    getLogger().error("Error with PlaceholderAPI", e);
-                    return s;
-                }
-            };
-        } catch (ClassNotFoundException ignored) {
-            placeholderFunc = (s, p) -> s;
+    public boolean hasPlaceholders() {
+        if (getServer().getPluginManager().getPlugin("PlaceholderAPI") != null) {
+            return true;
+        }
+        return false;
+    }
+
+    public String placeholders(String str, Player p) {
+        if (hasPlaceholders()) {
+            PlaceholderAPI placeholders = PlaceholderAPI.getInstance();
+            return placeholders.translateString(str, p);
+        } else {
+            return str;
         }
     }
 }
