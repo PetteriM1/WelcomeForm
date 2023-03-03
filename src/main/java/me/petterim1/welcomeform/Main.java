@@ -19,6 +19,8 @@ public class Main extends PluginBase implements Listener {
 
     private boolean showButton;
     private boolean buttonAction;
+    private boolean buttonActionOnClose;
+    private boolean buttonActionAsConsole;
     private boolean showOnlyOnce;
     private int secondsAfterJoin;
     private String formTitle;
@@ -32,11 +34,13 @@ public class Main extends PluginBase implements Listener {
     public void onEnable() {
         getServer().getPluginManager().registerEvents(this, this);
         saveDefaultConfig();
-        if (getConfig().getInt("config") < 3) {
-            getLogger().warning("Outdated config file detected! Please delete the old config to use all new features");
+        if (getConfig().getInt("config") < 4) {
+            getLogger().warning("Outdated config file detected! Please delete or update the old config.yml to use all new features");
         }
         showButton = getConfig().getBoolean("showButton", true);
         buttonAction = getConfig().getBoolean("buttonAction", false);
+        buttonActionOnClose = getConfig().getBoolean("buttonActionOnClose", false);
+        buttonActionAsConsole = getConfig().getBoolean("buttonActionAsConsole", false);
         showOnlyOnce = getConfig().getBoolean("showOnlyOnce", false);
         secondsAfterJoin = getConfig().getInt("secondsAfterJoin", 0) * 20;
         formTitle = getConfig().getString("formTitle", "§2WelcomeForm");
@@ -45,6 +49,12 @@ public class Main extends PluginBase implements Listener {
         buttonCommand = getConfig().getString("buttonCommand", "");
         if (showOnlyOnce) {
             formRead = new Config(getDataFolder() + "/formRead.yml", Config.YAML).getStringList("formRead");
+        }
+        if (buttonAction && buttonCommand.isEmpty()) {
+            getLogger().warning("[Config] buttonAction is enabled but buttonCommand is empty");
+        }
+        if (buttonActionOnClose && buttonCommand.isEmpty()) {
+            getLogger().warning("[Config] buttonActionOnClose is enabled but buttonCommand is empty");
         }
         initPlaceholders();
     }
@@ -83,15 +93,17 @@ public class Main extends PluginBase implements Listener {
 
     @EventHandler(ignoreCancelled = true)
     public void onFormResponse(PlayerFormRespondedEvent e) {
-        if (!showButton || !buttonAction) return;
-        if (e.getResponse() == null) return;
-        if (e.getWindow().wasClosed()) return;
         if (e.getWindow() instanceof FormWindowSimple) {
             Player p = e.getPlayer();
-            if (placeholderFunc.apply(formTitle, p).equals(((FormWindowSimple) e.getWindow()).getTitle())) {
-                if (placeholderFunc.apply(buttonText, p).equals(((FormWindowSimple) e.getWindow()).getResponse().getClickedButton().getText())) {
-                    getServer().dispatchCommand(p, buttonCommand.replace("%player%", "\"" + p.getName()) + "\"");
+            if (e.getResponse() == null || e.getWindow().wasClosed()) {
+                if (buttonActionOnClose && placeholderFunc.apply(formTitle, p).equals(((FormWindowSimple) e.getWindow()).getTitle()))  {
+                    getServer().dispatchCommand(buttonActionAsConsole ? getServer().getConsoleSender() : p, buttonCommand.replace("%player%", "\"" + p.getName()) + "\"");
                 }
+                return;
+            }
+            if (showButton && buttonAction && placeholderFunc.apply(formTitle, p).equals(((FormWindowSimple) e.getWindow()).getTitle()) &&
+                    placeholderFunc.apply(buttonText, p).equals(((FormWindowSimple) e.getWindow()).getResponse().getClickedButton().getText())) {
+                getServer().dispatchCommand(buttonActionAsConsole ? getServer().getConsoleSender() : p, buttonCommand.replace("%player%", "\"" + p.getName()) + "\"");
             }
         }
     }

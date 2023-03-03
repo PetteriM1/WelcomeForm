@@ -1,5 +1,5 @@
 # config version, do not edit!
-config: 3
+config: 4
 # form title
 # use § for colors
 formTitle: "§2WelcomeForm"
@@ -15,6 +15,10 @@ showButton: true
 buttonText: "§6Okay"
 # enable button click action
 buttonAction: false
+# run button action when the form is closed without clicking the button
+buttonActionOnClose: false
+# run button command as console
+buttonActionAsConsole: false
 # command that will run when the button is clicked
 # without /
 # use %player% for player name
