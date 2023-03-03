@@ -103,18 +103,18 @@ public class Main extends PluginBase implements Listener {
     }
 
     private void initPlaceholders() {
-        try {
-            Class<?> placeholderAPI = Class.forName("com.creeperface.nukkit.placeholderapi.api.PlaceholderAPI");
+        if (getServer().getPluginManager().getPlugin("PlaceholderAPI") == null) {
+            getLogger().info("PlaceholderAPI not found. Placeholders are not available");
+            placeholderFunc = (s, p) -> s;
+        } else {
             placeholderFunc = (s, p) -> {
                 try {
-                    return (String) placeholderAPI.getDeclaredMethod("translateString", String.class, Player.class).invoke(PlaceholderAPI.getInstance(), s, p);
+                    return PlaceholderAPI.getInstance().translateString(s, p);
                 } catch (Exception e) {
                     getLogger().error("Error with PlaceholderAPI", e);
                     return s;
                 }
             };
-        } catch (ClassNotFoundException ignored) {
-            placeholderFunc = (s, p) -> s;
         }
     }
 }
